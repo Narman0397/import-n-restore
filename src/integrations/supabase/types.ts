@@ -14,7 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      opd: {
+        Row: {
+          created_at: string
+          id: string
+          kategori: string[]
+          nama: string
+          singkatan: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kategori?: string[]
+          nama: string
+          singkatan: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kategori?: string[]
+          nama?: string
+          singkatan?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +46,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      app_role: "warga" | "admin_opd" | "super_admin" | "admin_desa"
+      status_permohonan: "baru" | "diproses" | "selesai" | "ditolak"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +174,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["warga", "admin_opd", "super_admin", "admin_desa"],
+      status_permohonan: ["baru", "diproses", "selesai", "ditolak"],
+    },
   },
 } as const
