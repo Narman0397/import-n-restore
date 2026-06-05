@@ -9,7 +9,7 @@ async function assertViewer(userId: string) {
   const { data: isSuper } = await supabaseAdmin.rpc("has_role", { _user_id: userId, _role: "super_admin" });
   if (isSuper === true) return;
   // admin_pemda role may not exist in enum; rely on permission flag below.
-  const { data: hasPerm } = await supabaseAdmin.rpc("has_permission", { _user_id: userId, _code: "can_view_audit_logs" });
+  const { data: hasPerm } = await supabaseAdmin.rpc("has_permission", { _user_id: userId, _permission_code: "can_view_audit_logs" });
   if (hasPerm !== true) throw new Error("Forbidden");
 }
 

@@ -396,8 +396,8 @@ function SystemHealthPage() {
                 <tbody>
                   {(rateQ.data ?? []).map((r, i) => (
                     <tr key={i} className="border-t border-border/50">
-                      <td className="px-4 py-2 font-mono text-xs">{r.bucket}</td>
-                      <td className="px-4 py-2 font-mono text-xs truncate max-w-[180px]">{r.identifier}</td>
+                      <td className="px-4 py-2 font-mono text-xs">{r.scope}</td>
+                      <td className="px-4 py-2 font-mono text-xs truncate max-w-[180px]">{r.subject}</td>
                       <td className="px-4 py-2 text-muted-foreground">{r.count}</td>
                     </tr>
                   ))}

@@ -122,7 +122,7 @@ export const listTopRateLimitHits = createServerFn({ method: "POST" })
     const oneHourAgo = new Date(Date.now() - 3600 * 1000).toISOString();
     const { data, error } = await supabaseAdmin
       .from("rate_limit_hits")
-      .select("bucket,identifier,count,window_start,last_hit_at")
+      .select("scope,subject,count,window_start,last_hit_at")
       .gte("last_hit_at", oneHourAgo)
       .order("count", { ascending: false })
       .limit(10);
