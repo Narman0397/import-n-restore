@@ -1,0 +1,1 @@
+COMMENT ON SCHEMA public IS 'Full schema restored from snapshot + 107 incremental migrations';
