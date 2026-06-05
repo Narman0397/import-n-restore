@@ -44,7 +44,7 @@ function RatingPage() {
     setLoading(true);
     const { data, error } = await supabase.rpc("rating_list_admin");
     if (error) toast.error(error.message);
-    setRows((data ?? []) as RatingRow[]);
+    setRows((data ?? []) as unknown as RatingRow[]);
     setLoading(false);
   }
 
