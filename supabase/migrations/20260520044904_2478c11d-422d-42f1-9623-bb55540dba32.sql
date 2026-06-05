@@ -1,1 +1,0 @@
-ALTER TABLE public.aset ADD COLUMN IF NOT EXISTS catatan text;
