@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      desa: {
+        Row: {
+          aktif: boolean
+          created_at: string
+          id: string
+          kecamatan: string | null
+          nama: string
+          updated_at: string
+        }
+        Insert: {
+          aktif?: boolean
+          created_at?: string
+          id?: string
+          kecamatan?: string | null
+          nama: string
+          updated_at?: string
+        }
+        Update: {
+          aktif?: boolean
+          created_at?: string
+          id?: string
+          kecamatan?: string | null
+          nama?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       opd: {
         Row: {
           created_at: string
