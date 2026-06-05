@@ -1929,6 +1929,45 @@ export type Database = {
         }
         Relationships: []
       }
+      geofence_audit: {
+        Row: {
+          created_at: string
+          dist_m: number | null
+          id: string
+          lat: number | null
+          lng: number | null
+          opd_id: string | null
+          radius_m: number | null
+          reason: string | null
+          user_id: string
+          valid: boolean
+        }
+        Insert: {
+          created_at?: string
+          dist_m?: number | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          opd_id?: string | null
+          radius_m?: number | null
+          reason?: string | null
+          user_id: string
+          valid?: boolean
+        }
+        Update: {
+          created_at?: string
+          dist_m?: number | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          opd_id?: string | null
+          radius_m?: number | null
+          reason?: string | null
+          user_id?: string
+          valid?: boolean
+        }
+        Relationships: []
+      }
       hari_libur: {
         Row: {
           catatan: string | null
@@ -2746,6 +2785,7 @@ export type Database = {
           ringkasan: string | null
           sla_paused_at: string | null
           sla_total_pause_seconds: number
+          status: Database["public"]["Enums"]["status_permohonan"]
           tanggal_masuk: string
           tenggat: string | null
           untuk_orang_lain: boolean
@@ -2774,6 +2814,7 @@ export type Database = {
           ringkasan?: string | null
           sla_paused_at?: string | null
           sla_total_pause_seconds?: number
+          status?: Database["public"]["Enums"]["status_permohonan"]
           tanggal_masuk?: string
           tenggat?: string | null
           untuk_orang_lain?: boolean
@@ -2802,6 +2843,7 @@ export type Database = {
           ringkasan?: string | null
           sla_paused_at?: string | null
           sla_total_pause_seconds?: number
+          status?: Database["public"]["Enums"]["status_permohonan"]
           tanggal_masuk?: string
           tenggat?: string | null
           untuk_orang_lain?: boolean
@@ -2955,6 +2997,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          asn_type: Database["public"]["Enums"]["asn_type"] | null
           created_at: string
           desa: string | null
           id: string
@@ -2965,12 +3008,15 @@ export type Database = {
           no_hp: string | null
           opd_id: string | null
           status: string
+          system_position: Database["public"]["Enums"]["system_position"] | null
           updated_at: string
           username: string | null
+          verification_status: Database["public"]["Enums"]["verification_status_enum"]
           verified_at: string | null
           verified_by: string | null
         }
         Insert: {
+          asn_type?: Database["public"]["Enums"]["asn_type"] | null
           created_at?: string
           desa?: string | null
           id: string
@@ -2981,12 +3027,17 @@ export type Database = {
           no_hp?: string | null
           opd_id?: string | null
           status?: string
+          system_position?:
+            | Database["public"]["Enums"]["system_position"]
+            | null
           updated_at?: string
           username?: string | null
+          verification_status?: Database["public"]["Enums"]["verification_status_enum"]
           verified_at?: string | null
           verified_by?: string | null
         }
         Update: {
+          asn_type?: Database["public"]["Enums"]["asn_type"] | null
           created_at?: string
           desa?: string | null
           id?: string
@@ -2997,8 +3048,12 @@ export type Database = {
           no_hp?: string | null
           opd_id?: string | null
           status?: string
+          system_position?:
+            | Database["public"]["Enums"]["system_position"]
+            | null
           updated_at?: string
           username?: string | null
+          verification_status?: Database["public"]["Enums"]["verification_status_enum"]
           verified_at?: string | null
           verified_by?: string | null
         }
@@ -4186,15 +4241,12 @@ export type Database = {
         Args: { _month: number; _user_id: string; _year: number }
         Returns: Json
       }
-      can_access_paket: {
-        Args: { _paket_id: string; _user_id: string }
-        Returns: boolean
-      }
       count_permohonan_bulan_ini: { Args: never; Returns: number }
       dashboard_summary: {
         Args: { _days?: number; _opd?: string }
         Returns: Json
       }
+      executive_summary: { Args: never; Returns: Json }
       fn_generate_nomor_surat: {
         Args: { _opd_id: string; _permohonan_id: string }
         Returns: string
@@ -4249,11 +4301,31 @@ export type Database = {
         }
         Returns: string
       }
+      layanan_kinerja_agg: {
+        Args: never
+        Returns: {
+          ditolak: number
+          kategori: string
+          rata_hari: number
+          selesai: number
+          total: number
+        }[]
+      }
       migrasi_dataset_ke_forms: {
         Args: { _template_id: string }
         Returns: string
       }
       opd_attendance_today: { Args: { _opd_id: string }; Returns: Json }
+      opd_kategori_benchmark: {
+        Args: { _kategori: string }
+        Returns: {
+          opd_id: string
+          rata_hari: number
+          selesai: number
+          singkatan: string
+          total: number
+        }[]
+      }
       opd_kinerja_agg: {
         Args: never
         Returns: {
@@ -4266,12 +4338,35 @@ export type Database = {
           total_hari_selesai: number
         }[]
       }
+      opd_kinerja_trend: {
+        Args: { _months?: number; _opd?: string }
+        Returns: {
+          bulan: string
+          opd_id: string
+          selesai: number
+          tepat_waktu: number
+          total: number
+        }[]
+      }
       opd_rating_agg: {
         Args: never
         Returns: {
           jumlah_rating: number
           opd_id: string
           total_rating: number
+        }[]
+      }
+      opd_skor_komposit: {
+        Args: never
+        Returns: {
+          nama: string
+          opd_id: string
+          persen_selesai: number
+          persen_tepat_waktu: number
+          rata_rating: number
+          singkatan: string
+          skor: number
+          total_permohonan: number
         }[]
       }
       production_health_score: { Args: never; Returns: Json }
