@@ -61,7 +61,7 @@ export async function userHasPermission(
 ): Promise<boolean> {
   const { data, error } = await supabase.rpc("has_permission", {
     _user_id: userId,
-    _code: code,
+    _permission_code: code,
   });
   if (error) return false;
   return Boolean(data);
