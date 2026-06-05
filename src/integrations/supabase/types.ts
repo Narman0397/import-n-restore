@@ -766,6 +766,47 @@ export type Database = {
           },
         ]
       }
+      attendance_shift_assignment: {
+        Row: {
+          aktif: boolean
+          created_at: string
+          created_by: string | null
+          dari: string
+          id: string
+          sampai: string | null
+          shift_id: string
+          user_id: string
+        }
+        Insert: {
+          aktif?: boolean
+          created_at?: string
+          created_by?: string | null
+          dari: string
+          id?: string
+          sampai?: string | null
+          shift_id: string
+          user_id: string
+        }
+        Update: {
+          aktif?: boolean
+          created_at?: string
+          created_by?: string | null
+          dari?: string
+          id?: string
+          sampai?: string | null
+          shift_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_shift_assignment_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "attendance_shifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       attendance_shifts: {
         Row: {
           aktif: boolean
@@ -1484,6 +1525,13 @@ export type Database = {
             referencedRelation: "permohonan"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "dokumen_verifikasi_permohonan_id_fkey"
+            columns: ["permohonan_id"]
+            isOneToOne: false
+            referencedRelation: "v_permohonan_overdue"
+            referencedColumns: ["id"]
+          },
         ]
       }
       escalation_config: {
@@ -2056,6 +2104,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "ikm_responses_permohonan_id_fkey"
+            columns: ["permohonan_id"]
+            isOneToOne: false
+            referencedRelation: "v_permohonan_overdue"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "ikm_responses_survey_id_fkey"
             columns: ["survey_id"]
             isOneToOne: false
@@ -2374,7 +2429,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "leave_balances_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lokasi_gedung: {
         Row: {
@@ -2521,6 +2584,13 @@ export type Database = {
             referencedRelation: "permohonan"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "nomor_surat_issued_permohonan_id_fkey"
+            columns: ["permohonan_id"]
+            isOneToOne: false
+            referencedRelation: "v_permohonan_overdue"
+            referencedColumns: ["id"]
+          },
         ]
       }
       nomor_surat_sequence: {
@@ -2626,6 +2696,62 @@ export type Database = {
           singkatan?: string
         }
         Relationships: []
+      }
+      overtime_requests: {
+        Row: {
+          alasan: string
+          approved_at: string | null
+          approver_id: string | null
+          catatan_approval: string | null
+          created_at: string
+          id: string
+          jam_mulai: string
+          jam_selesai: string
+          opd_id: string | null
+          status: string
+          tanggal: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alasan: string
+          approved_at?: string | null
+          approver_id?: string | null
+          catatan_approval?: string | null
+          created_at?: string
+          id?: string
+          jam_mulai: string
+          jam_selesai: string
+          opd_id?: string | null
+          status?: string
+          tanggal: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alasan?: string
+          approved_at?: string | null
+          approver_id?: string | null
+          catatan_approval?: string | null
+          created_at?: string
+          id?: string
+          jam_mulai?: string
+          jam_selesai?: string
+          opd_id?: string | null
+          status?: string
+          tanggal?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "overtime_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payroll_periods: {
         Row: {
@@ -2994,6 +3120,13 @@ export type Database = {
             referencedRelation: "permohonan"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "permohonan_rating_permohonan_id_fkey"
+            columns: ["permohonan_id"]
+            isOneToOne: false
+            referencedRelation: "v_permohonan_overdue"
+            referencedColumns: ["id"]
+          },
         ]
       }
       permohonan_riwayat: {
@@ -3027,6 +3160,13 @@ export type Database = {
             columns: ["permohonan_id"]
             isOneToOne: false
             referencedRelation: "permohonan"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "permohonan_riwayat_permohonan_id_fkey"
+            columns: ["permohonan_id"]
+            isOneToOne: false
+            referencedRelation: "v_permohonan_overdue"
             referencedColumns: ["id"]
           },
         ]
@@ -3728,6 +3868,13 @@ export type Database = {
             referencedRelation: "permohonan"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "submission_dispositions_permohonan_id_fkey"
+            columns: ["permohonan_id"]
+            isOneToOne: false
+            referencedRelation: "v_permohonan_overdue"
+            referencedColumns: ["id"]
+          },
         ]
       }
       submission_files: {
@@ -3821,6 +3968,13 @@ export type Database = {
             columns: ["permohonan_id"]
             isOneToOne: false
             referencedRelation: "permohonan"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "submission_sla_events_permohonan_id_fkey"
+            columns: ["permohonan_id"]
+            isOneToOne: false
+            referencedRelation: "v_permohonan_overdue"
             referencedColumns: ["id"]
           },
         ]
@@ -4246,6 +4400,38 @@ export type Database = {
           },
         ]
       }
+      v_permohonan_overdue: {
+        Row: {
+          id: string | null
+          kode: string | null
+          opd_id: string | null
+          overdue_days: number | null
+          status: string | null
+        }
+        Insert: {
+          id?: string | null
+          kode?: string | null
+          opd_id?: string | null
+          overdue_days?: never
+          status?: never
+        }
+        Update: {
+          id?: string | null
+          kode?: string | null
+          opd_id?: string | null
+          overdue_days?: never
+          status?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "permohonan_opd_id_fkey"
+            columns: ["opd_id"]
+            isOneToOne: false
+            referencedRelation: "opd"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       _lovable_exec_sql: { Args: { sql: string }; Returns: undefined }
@@ -4467,6 +4653,19 @@ export type Database = {
             Args: { _scope: string; _subject: string; _window_start: string }
             Returns: number
           }
+      rating_list_admin: {
+        Args: never
+        Returns: {
+          created_at: string
+          id: string
+          kode: string
+          komentar: string
+          opd_id: string
+          opd_singkatan: string
+          permohonan_id: string
+          skor: number
+        }[]
+      }
       rating_public_stats: {
         Args: never
         Returns: {
