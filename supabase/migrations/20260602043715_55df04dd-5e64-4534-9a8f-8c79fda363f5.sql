@@ -1,2 +1,0 @@
--- Loaded from supabase/sql/01.schema.sql
--- See file for full contents
