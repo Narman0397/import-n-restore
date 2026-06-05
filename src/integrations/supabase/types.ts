@@ -2340,6 +2340,42 @@ export type Database = {
         }
         Relationships: []
       }
+      leave_balances: {
+        Row: {
+          catatan: string | null
+          created_at: string
+          id: string
+          jenis: string
+          kuota: number
+          tahun: number
+          terpakai: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          catatan?: string | null
+          created_at?: string
+          id?: string
+          jenis: string
+          kuota?: number
+          tahun: number
+          terpakai?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          catatan?: string | null
+          created_at?: string
+          id?: string
+          jenis?: string
+          kuota?: number
+          tahun?: number
+          terpakai?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       lokasi_gedung: {
         Row: {
           alamat: string | null
@@ -4278,6 +4314,17 @@ export type Database = {
         Returns: Database["public"]["Enums"]["system_position"]
       }
       governance_summary: { Args: never; Returns: Json }
+      has_permission: {
+        Args: { _permission_code: string; _user_id: string }
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_payroll_locked: {
         Args: { _opd_id: string; _ts: string }
         Returns: boolean
@@ -4304,10 +4351,15 @@ export type Database = {
       layanan_kinerja_agg: {
         Args: never
         Returns: {
-          ditolak: number
           kategori: string
-          rata_hari: number
+          layanan_id: string
+          layanan_judul: string
+          on_time: number
+          opd_id: string
+          opd_singkatan: string
+          rata_hari_selesai: number
           selesai: number
+          selesai_dengan_sla: number
           total: number
         }[]
       }
@@ -4342,10 +4394,10 @@ export type Database = {
         Args: { _months?: number; _opd?: string }
         Returns: {
           bulan: string
-          opd_id: string
+          masuk: number
+          on_time: number
           selesai: number
-          tepat_waktu: number
-          total: number
+          selesai_dengan_sla: number
         }[]
       }
       opd_rating_agg: {
@@ -4359,14 +4411,16 @@ export type Database = {
       opd_skor_komposit: {
         Args: never
         Returns: {
-          nama: string
+          completion_pct: number
+          kategori: string[]
           opd_id: string
-          persen_selesai: number
-          persen_tepat_waktu: number
-          rata_rating: number
-          singkatan: string
+          opd_nama: string
+          opd_singkatan: string
+          rating_avg: number
+          selesai: number
           skor: number
-          total_permohonan: number
+          sla_pct: number
+          total: number
         }[]
       }
       production_health_score: { Args: never; Returns: Json }
