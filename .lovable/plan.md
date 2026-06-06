@@ -1,48 +1,45 @@
-# Audit Migrasi RLS vs Kode
+## Sprint Database Reconciliation — Plan Eksekusi
 
-## Hasil verifikasi DB
+Sprint ini sangat besar (11 fase, mencakup ±462 object drift). Saya butuh konfirmasi pendekatan sebelum mulai, karena beberapa keputusan akan menentukan banyak jam kerja & risiko terhadap production.
 
-| Tabel | RLS aktif | Jumlah policy | Kolom referensi | Sesuai kode? |
-|---|---|---|---|---|
-| profiles | ✅ | 3 (select/update/insert) | id, opd_id, desa | ✅ |
-| user_roles | ✅ | 2 (select, all super_admin) | user_id | ✅ |
-| laporan_masyarakat | ✅ | 3 (insert publik, select/update admin scope) | opd_id | ✅ |
+---
 
-Helper fungsi `has_role`, `get_user_opd`, `get_user_desa`, `_lovable_request_uid` semua ada. Struktur kolom yang direferensikan policy semua match dengan yang dipanggil di kode (`auth-context.tsx`, `permissions.functions.ts`, dll).
+### Pendekatan Umum
 
-## Masalah yang ditemukan
+Saya akan kerjakan **read-only inventarisasi dulu (Phase 1–9)**, hasilkan laporan lengkap, lalu **baru** menulis migrasi rekonstruksi (Phase 10) setelah Anda setuju cakupannya. Phase 11 (fresh-deploy test) tidak bisa saya jalankan langsung di sandbox — saya hanya bisa menyiapkan script-nya, lalu Anda jalankan di Supabase project baru.
 
-Semua policy memakai `public._lovable_request_uid()` (workaround agar `CREATE POLICY` tidak butuh USAGE pada schema `auth`). Implementasi sekarang **hanya** membaca GUC legacy:
+### Output yang akan dihasilkan
 
-```
-NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid
-```
+Semua disimpan ke `/mnt/documents/db-reconciliation/`:
 
-Sementara `auth.uid()` Supabase membaca dua sumber (legacy GUC + JSON `request.jwt.claims`). Bila PostgREST hanya men-set JSON claims (perilaku modern), helper kita return `NULL` → seluruh policy authenticated effectively deny-all (user tak bisa baca profil/role sendiri, dashboard admin kosong, dsb).
-
-## Perbaikan
-
-Update `REMEDIATION_P0_MANUAL.sql` dan jalankan ulang hanya bagian fungsi helper (policy tidak perlu di-recreate — fungsi STABLE dipanggil per-row saat eksekusi):
-
-```sql
-CREATE OR REPLACE FUNCTION public._lovable_request_uid()
-RETURNS uuid
-LANGUAGE sql
-STABLE
-AS $$
-  SELECT COALESCE(
-    NULLIF(current_setting('request.jwt.claim.sub', true), ''),
-    NULLIF(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub'
-  )::uuid
-$$;
+```text
+db-reconciliation/
+├── 01_live_inventory.json          # Phase 1
+├── 02_schema_reconciliation.md     # Phase 2
+├── 03_storage_audit.md             # Phase 3
+├── 04_enum_audit.md                # Phase 4
+├── 05_rpc_audit.md                 # Phase 5
+├── 06_table_audit.md               # Phase 6
+├── 07_rls_matrix.md                # Phase 7
+├── 08_policy_validation.md         # Phase 8 (IDOR/leakage)
+├── 09_performance_report.md        # Phase 9
+├── 10_reconstruction.sql           # Phase 10 (additive, idempotent)
+├── 11_fresh_deploy_test.md         # Phase 11 instruksi
+└── SUMMARY.md                      # Drift summary + readiness score
 ```
 
-Setelah patch, export ulang `/mnt/documents/REMEDIATION_P0_MANUAL.sql` agar user bisa run manual sekali untuk meng-`CREATE OR REPLACE` fungsi tersebut (tidak butuh hak owner table — fungsi milik kita sendiri di schema public).
+### Prinsip Eksekusi
 
-## Verifikasi pasca-patch
+1. **Read-only sampai Phase 10.** Tidak ada `supabase--migration` dipanggil sampai laporan disetujui.
+2. **Additive only.** Migrasi rekonstruksi pakai `CREATE … IF NOT EXISTS`, `CREATE OR REPLACE`, `DROP POLICY IF EXISTS` + `CREATE POLICY`. Tidak ada `DROP TABLE`, tidak ada `DROP COLUMN`, tidak ada penghapusan enum value.
+3. **Tidak menyentuh business logic.** Hanya schema, RLS, indexes, RPC signatures, storage buckets.
+4. **Code = source of truth untuk apa yang dipakai.** Live DB = source of truth untuk struktur. Migration repo akan direkonstruksi mengikuti live DB.
 
-1. Login sebagai user warga biasa → buka `/akun` → profil dan role harus terbaca (bukan kosong).
-2. Login sebagai admin_opd → `/admin/laporan` harus menampilkan laporan dengan `opd_id` yang sesuai.
-3. Login sebagai super_admin → `/admin/users` harus list semua profiles & user_roles.
+### Yang Saya Butuhkan Konfirmasi
 
-Tidak ada perubahan pada kode aplikasi — semua patch hanya di SQL helper.
+1. **Apakah Phase 10 boleh menghasilkan SATU file SQL besar** (`10_reconstruction.sql`) yang dijalankan manual via SQL editor, atau Anda mau saya pecah jadi beberapa `supabase--migration` calls (yang masing-masing minta approval)?
+2. **Bucket `branding` yang hilang:** boleh saya buat langsung dengan `supabase--storage_create_bucket` (private), atau cukup masukkan ke laporan dulu?
+3. **Phase 8 (IDOR/policy validation):** apakah cukup analisis static (baca policy + bandingkan dengan akses code), atau Anda mau saya buat test queries dengan `SET LOCAL request.jwt.claims` untuk simulate tiap role? Yang kedua jauh lebih thorough tapi memakan waktu.
+4. **Apakah Anda OK kalau saya tidak menjalankan Phase 11 sendiri?** Saya tidak punya akses ke project Supabase kosong; saya hanya bisa siapkan SQL + checklist untuk Anda jalankan di project staging.
+
+Setelah Anda jawab, saya langsung mulai Phase 1.
