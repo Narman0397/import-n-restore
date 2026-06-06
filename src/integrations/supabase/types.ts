@@ -4317,7 +4317,15 @@ export type Database = {
           toleransi_menit?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "work_schedule_opd_id_fkey"
+            columns: ["opd_id"]
+            isOneToOne: false
+            referencedRelation: "opd"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       work_schedule_assignment: {
         Row: {

@@ -1,45 +1,41 @@
-## Sprint Database Reconciliation — Plan Eksekusi
+## 1. Satukan menu "Pengguna" + "Hak Akses"
 
-Sprint ini sangat besar (11 fase, mencakup ±462 object drift). Saya butuh konfirmasi pendekatan sebelum mulai, karena beberapa keputusan akan menentukan banyak jam kerja & risiko terhadap production.
+Saat ini sidebar admin punya dua entri (`AdminShell.tsx` baris 69–70):
+- `/admin/users` → halaman `admin.users.tsx` yang sudah berisi tabel user **dan** panel `UserRbacPanel` (role + permission override).
+- `/admin/rbac` → cuma `redirect → /admin/users`. Jadi memang isinya identik.
 
----
+Perubahan:
+- Di `src/components/admin/AdminShell.tsx`: hapus entri `Hak Akses`, ganti label `Pengguna` jadi **"Pengguna & Hak Akses"** (ikon tetap `Users`, atau gabungkan dengan `ShieldIcon`).
+- Biarkan file route `admin.rbac.tsx`, `admin.rbac.$userId.tsx`, `admin.rbac.audit.tsx` tetap sebagai redirect — supaya bookmark/lama tidak 404.
+- Pastikan halaman `/admin/users` punya heading/section eksplisit "Hak Akses" agar user paham fitur menyatu.
 
-### Pendekatan Umum
+## 2. Perbaiki error `work_schedule` ↔ `opd`
 
-Saya akan kerjakan **read-only inventarisasi dulu (Phase 1–9)**, hasilkan laporan lengkap, lalu **baru** menulis migrasi rekonstruksi (Phase 10) setelah Anda setuju cakupannya. Phase 11 (fresh-deploy test) tidak bisa saya jalankan langsung di sandbox — saya hanya bisa menyiapkan script-nya, lalu Anda jalankan di Supabase project baru.
+Penyebab: query `listSchedules` (di `src/lib/asn-advanced.functions.ts:46-48`) memakai PostgREST embed `opd:opd!opd_id(nama,singkatan)`, tapi tabel `public.work_schedule` **tidak punya FK** ke `public.opd` (dicek via `pg_constraint`). PostgREST melempar *"Could not find a relationship…"*.
 
-### Output yang akan dihasilkan
+Perbaikan (migration):
+- Tambahkan FK `work_schedule.opd_id → public.opd(id) ON DELETE SET NULL` (set NULL agar baris jadwal global tetap valid).
+- Bersihkan dulu nilai `opd_id` yang tidak match (`UPDATE … SET opd_id = NULL WHERE opd_id NOT IN (SELECT id FROM opd)`) supaya constraint bisa terbentuk.
+- Setelah migration, PostgREST otomatis menyegarkan schema cache dan embed `opd:opd!opd_id(...)` berfungsi. Tidak perlu ubah kode aplikasi.
 
-Semua disimpan ke `/mnt/documents/db-reconciliation/`:
+## 3. Audit form builder end-to-end
 
-```text
-db-reconciliation/
-├── 01_live_inventory.json          # Phase 1
-├── 02_schema_reconciliation.md     # Phase 2
-├── 03_storage_audit.md             # Phase 3
-├── 04_enum_audit.md                # Phase 4
-├── 05_rpc_audit.md                 # Phase 5
-├── 06_table_audit.md               # Phase 6
-├── 07_rls_matrix.md                # Phase 7
-├── 08_policy_validation.md         # Phase 8 (IDOR/leakage)
-├── 09_performance_report.md        # Phase 9
-├── 10_reconstruction.sql           # Phase 10 (additive, idempotent)
-├── 11_fresh_deploy_test.md         # Phase 11 instruksi
-└── SUMMARY.md                      # Drift summary + readiness score
-```
+Telusuri alur lalu perbaiki temuan:
+1. **Buat draft** di `/admin/forms` → `admin.forms.tsx` (`forms.functions.ts`: createForm).
+2. **Edit field & target** di `/admin/forms/$id` (`FormFieldsTab`, `FormMetaTab`, `FormTargetsTab`).
+3. **Publish** form (`status='published'`, `published_at`).
+4. **Assignment** ke user/OPD (`form_assignments`).
+5. **Pengisian** warga/ASN di `/pengisian` & `/pengisian/$id` (`FieldRenderer`, `FileUploader`, `useFormDraft`, `useUploadSession`).
+6. **Submit → state machine** (`submissions.functions.ts`, `schema/state-machine.ts`: draft→submitted→under_review→approved/rejected/revision_required).
+7. **Review admin** di `/admin/submission-review` + komentar (`submission_dispositions`, `form_submission_comment`).
 
-### Prinsip Eksekusi
+Untuk setiap langkah: jalankan minimal satu data uji via `supabase--read_query` / serverFn untuk memastikan tidak ada error RLS/grant/embed. Catat & perbaiki bug yang ditemukan (tipikal: embed PostgREST yang FK-nya hilang, validator Zod, trigger `form_submission_guard` transition, RLS pada `form_submission_files`).
 
-1. **Read-only sampai Phase 10.** Tidak ada `supabase--migration` dipanggil sampai laporan disetujui.
-2. **Additive only.** Migrasi rekonstruksi pakai `CREATE … IF NOT EXISTS`, `CREATE OR REPLACE`, `DROP POLICY IF EXISTS` + `CREATE POLICY`. Tidak ada `DROP TABLE`, tidak ada `DROP COLUMN`, tidak ada penghapusan enum value.
-3. **Tidak menyentuh business logic.** Hanya schema, RLS, indexes, RPC signatures, storage buckets.
-4. **Code = source of truth untuk apa yang dipakai.** Live DB = source of truth untuk struktur. Migration repo akan direkonstruksi mengikuti live DB.
+Karena ini investigatif, daftar perbaikan konkret baru bisa difinalisasi setelah audit. Hasil audit dilaporkan + diperbaiki dalam pass yang sama.
 
-### Yang Saya Butuhkan Konfirmasi
+## Urutan kerja
 
-1. **Apakah Phase 10 boleh menghasilkan SATU file SQL besar** (`10_reconstruction.sql`) yang dijalankan manual via SQL editor, atau Anda mau saya pecah jadi beberapa `supabase--migration` calls (yang masing-masing minta approval)?
-2. **Bucket `branding` yang hilang:** boleh saya buat langsung dengan `supabase--storage_create_bucket` (private), atau cukup masukkan ke laporan dulu?
-3. **Phase 8 (IDOR/policy validation):** apakah cukup analisis static (baca policy + bandingkan dengan akses code), atau Anda mau saya buat test queries dengan `SET LOCAL request.jwt.claims` untuk simulate tiap role? Yang kedua jauh lebih thorough tapi memakan waktu.
-4. **Apakah Anda OK kalau saya tidak menjalankan Phase 11 sendiri?** Saya tidak punya akses ke project Supabase kosong; saya hanya bisa siapkan SQL + checklist untuk Anda jalankan di project staging.
-
-Setelah Anda jawab, saya langsung mulai Phase 1.
+1. Migration FK `work_schedule.opd_id`.
+2. Edit `AdminShell.tsx` (gabungkan menu).
+3. Jalankan audit form builder, perbaiki temuan satu per satu.
+4. Verifikasi: buka `/admin/asn-kepatuhan` (tidak ada toast error), buka `/admin/users` (panel RBAC tampil), buat→isi→review form contoh.
