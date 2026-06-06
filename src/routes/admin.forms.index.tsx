@@ -17,7 +17,7 @@ const searchSchema = z.object({
   pageSize: z.number().int().min(5).max(50).catch(20).default(20),
 });
 
-export const Route = createFileRoute("/admin/forms")({
+export const Route = createFileRoute("/admin/forms/")({
   validateSearch: searchSchema,
   head: () => ({ meta: [{ title: "Admin — Form Builder" }, { name: "robots", content: "noindex" }] }),
   component: () => (
@@ -32,8 +32,8 @@ export const Route = createFileRoute("/admin/forms")({
 type Row = { id: string; judul: string; status: string; deadline: string | null; published_at: string | null; created_at: string };
 
 function Page() {
-  const search = useSearch({ from: "/admin/forms" });
-  const nav = useNavigate({ from: "/admin/forms" });
+  const search = useSearch({ from: "/admin/forms/" });
+  const nav = useNavigate({ from: "/admin/forms/" });
   const [rows, setRows] = useState<Row[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);

@@ -58,7 +58,6 @@ import { Route as AdminIzinRouteImport } from './routes/admin.izin'
 import { Route as AdminIkmRouteImport } from './routes/admin.ikm'
 import { Route as AdminHariLiburRouteImport } from './routes/admin.hari-libur'
 import { Route as AdminGovernanceRouteImport } from './routes/admin.governance'
-import { Route as AdminFormsRouteImport } from './routes/admin.forms'
 import { Route as AdminEksekutifRouteImport } from './routes/admin.eksekutif'
 import { Route as AdminDesaRouteImport } from './routes/admin.desa'
 import { Route as AdminDatasetRouteImport } from './routes/admin.dataset'
@@ -73,6 +72,7 @@ import { Route as AdminAsnRouteImport } from './routes/admin.asn'
 import { Route as AdminAsetKampanyeRouteImport } from './routes/admin.aset-kampanye'
 import { Route as AdminAsetExtraRouteImport } from './routes/admin.aset-extra'
 import { Route as AdminAsetRouteImport } from './routes/admin.aset'
+import { Route as AdminFormsIndexRouteImport } from './routes/admin.forms.index'
 import { Route as AsnScanTokenRouteImport } from './routes/asn.scan.$token'
 import { Route as ApiInternalMetricsRouteImport } from './routes/api/internal/metrics'
 import { Route as AdminSystemUatRouteImport } from './routes/admin.system.uat'
@@ -358,11 +358,6 @@ const AdminGovernanceRoute = AdminGovernanceRouteImport.update({
   path: '/admin/governance',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminFormsRoute = AdminFormsRouteImport.update({
-  id: '/admin/forms',
-  path: '/admin/forms',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminEksekutifRoute = AdminEksekutifRouteImport.update({
   id: '/admin/eksekutif',
   path: '/admin/eksekutif',
@@ -431,6 +426,11 @@ const AdminAsetExtraRoute = AdminAsetExtraRouteImport.update({
 const AdminAsetRoute = AdminAsetRouteImport.update({
   id: '/admin/aset',
   path: '/admin/aset',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminFormsIndexRoute = AdminFormsIndexRouteImport.update({
+  id: '/admin/forms/',
+  path: '/admin/forms/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AsnScanTokenRoute = AsnScanTokenRouteImport.update({
@@ -673,7 +673,6 @@ export interface FileRoutesByFullPath {
   '/admin/dataset': typeof AdminDatasetRouteWithChildren
   '/admin/desa': typeof AdminDesaRoute
   '/admin/eksekutif': typeof AdminEksekutifRoute
-  '/admin/forms': typeof AdminFormsRouteWithChildren
   '/admin/governance': typeof AdminGovernanceRoute
   '/admin/hari-libur': typeof AdminHariLiburRoute
   '/admin/ikm': typeof AdminIkmRoute
@@ -737,6 +736,7 @@ export interface FileRoutesByFullPath {
   '/admin/system/uat': typeof AdminSystemUatRoute
   '/api/internal/metrics': typeof ApiInternalMetricsRoute
   '/asn/scan/$token': typeof AsnScanTokenRoute
+  '/admin/forms/': typeof AdminFormsIndexRoute
   '/api/public/hooks/aset-susut-bulanan': typeof ApiPublicHooksAsetSusutBulananRoute
   '/api/public/hooks/aset-warranty-reminder': typeof ApiPublicHooksAsetWarrantyReminderRoute
   '/api/public/hooks/assignment-reminder': typeof ApiPublicHooksAssignmentReminderRoute
@@ -778,7 +778,6 @@ export interface FileRoutesByTo {
   '/admin/dataset': typeof AdminDatasetRouteWithChildren
   '/admin/desa': typeof AdminDesaRoute
   '/admin/eksekutif': typeof AdminEksekutifRoute
-  '/admin/forms': typeof AdminFormsRouteWithChildren
   '/admin/governance': typeof AdminGovernanceRoute
   '/admin/hari-libur': typeof AdminHariLiburRoute
   '/admin/ikm': typeof AdminIkmRoute
@@ -842,6 +841,7 @@ export interface FileRoutesByTo {
   '/admin/system/uat': typeof AdminSystemUatRoute
   '/api/internal/metrics': typeof ApiInternalMetricsRoute
   '/asn/scan/$token': typeof AsnScanTokenRoute
+  '/admin/forms': typeof AdminFormsIndexRoute
   '/api/public/hooks/aset-susut-bulanan': typeof ApiPublicHooksAsetSusutBulananRoute
   '/api/public/hooks/aset-warranty-reminder': typeof ApiPublicHooksAsetWarrantyReminderRoute
   '/api/public/hooks/assignment-reminder': typeof ApiPublicHooksAssignmentReminderRoute
@@ -884,7 +884,6 @@ export interface FileRoutesById {
   '/admin/dataset': typeof AdminDatasetRouteWithChildren
   '/admin/desa': typeof AdminDesaRoute
   '/admin/eksekutif': typeof AdminEksekutifRoute
-  '/admin/forms': typeof AdminFormsRouteWithChildren
   '/admin/governance': typeof AdminGovernanceRoute
   '/admin/hari-libur': typeof AdminHariLiburRoute
   '/admin/ikm': typeof AdminIkmRoute
@@ -948,6 +947,7 @@ export interface FileRoutesById {
   '/admin/system/uat': typeof AdminSystemUatRoute
   '/api/internal/metrics': typeof ApiInternalMetricsRoute
   '/asn/scan/$token': typeof AsnScanTokenRoute
+  '/admin/forms/': typeof AdminFormsIndexRoute
   '/api/public/hooks/aset-susut-bulanan': typeof ApiPublicHooksAsetSusutBulananRoute
   '/api/public/hooks/aset-warranty-reminder': typeof ApiPublicHooksAsetWarrantyReminderRoute
   '/api/public/hooks/assignment-reminder': typeof ApiPublicHooksAssignmentReminderRoute
@@ -991,7 +991,6 @@ export interface FileRouteTypes {
     | '/admin/dataset'
     | '/admin/desa'
     | '/admin/eksekutif'
-    | '/admin/forms'
     | '/admin/governance'
     | '/admin/hari-libur'
     | '/admin/ikm'
@@ -1055,6 +1054,7 @@ export interface FileRouteTypes {
     | '/admin/system/uat'
     | '/api/internal/metrics'
     | '/asn/scan/$token'
+    | '/admin/forms/'
     | '/api/public/hooks/aset-susut-bulanan'
     | '/api/public/hooks/aset-warranty-reminder'
     | '/api/public/hooks/assignment-reminder'
@@ -1096,7 +1096,6 @@ export interface FileRouteTypes {
     | '/admin/dataset'
     | '/admin/desa'
     | '/admin/eksekutif'
-    | '/admin/forms'
     | '/admin/governance'
     | '/admin/hari-libur'
     | '/admin/ikm'
@@ -1160,6 +1159,7 @@ export interface FileRouteTypes {
     | '/admin/system/uat'
     | '/api/internal/metrics'
     | '/asn/scan/$token'
+    | '/admin/forms'
     | '/api/public/hooks/aset-susut-bulanan'
     | '/api/public/hooks/aset-warranty-reminder'
     | '/api/public/hooks/assignment-reminder'
@@ -1201,7 +1201,6 @@ export interface FileRouteTypes {
     | '/admin/dataset'
     | '/admin/desa'
     | '/admin/eksekutif'
-    | '/admin/forms'
     | '/admin/governance'
     | '/admin/hari-libur'
     | '/admin/ikm'
@@ -1265,6 +1264,7 @@ export interface FileRouteTypes {
     | '/admin/system/uat'
     | '/api/internal/metrics'
     | '/asn/scan/$token'
+    | '/admin/forms/'
     | '/api/public/hooks/aset-susut-bulanan'
     | '/api/public/hooks/aset-warranty-reminder'
     | '/api/public/hooks/assignment-reminder'
@@ -1307,7 +1307,6 @@ export interface RootRouteChildren {
   AdminDatasetRoute: typeof AdminDatasetRouteWithChildren
   AdminDesaRoute: typeof AdminDesaRoute
   AdminEksekutifRoute: typeof AdminEksekutifRoute
-  AdminFormsRoute: typeof AdminFormsRouteWithChildren
   AdminGovernanceRoute: typeof AdminGovernanceRoute
   AdminHariLiburRoute: typeof AdminHariLiburRoute
   AdminIkmRoute: typeof AdminIkmRoute
@@ -1358,6 +1357,7 @@ export interface RootRouteChildren {
   AdminSystemUatRoute: typeof AdminSystemUatRoute
   ApiInternalMetricsRoute: typeof ApiInternalMetricsRoute
   AsnScanTokenRoute: typeof AsnScanTokenRoute
+  AdminFormsIndexRoute: typeof AdminFormsIndexRoute
   ApiPublicHooksAsetSusutBulananRoute: typeof ApiPublicHooksAsetSusutBulananRoute
   ApiPublicHooksAsetWarrantyReminderRoute: typeof ApiPublicHooksAsetWarrantyReminderRoute
   ApiPublicHooksAssignmentReminderRoute: typeof ApiPublicHooksAssignmentReminderRoute
@@ -1719,13 +1719,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminGovernanceRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/forms': {
-      id: '/admin/forms'
-      path: '/admin/forms'
-      fullPath: '/admin/forms'
-      preLoaderRoute: typeof AdminFormsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin/eksekutif': {
       id: '/admin/eksekutif'
       path: '/admin/eksekutif'
@@ -1822,6 +1815,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/aset'
       fullPath: '/admin/aset'
       preLoaderRoute: typeof AdminAsetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/forms/': {
+      id: '/admin/forms/'
+      path: '/admin/forms'
+      fullPath: '/admin/forms/'
+      preLoaderRoute: typeof AdminFormsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/asn/scan/$token': {
@@ -2146,18 +2146,6 @@ const AdminDatasetRouteWithChildren = AdminDatasetRoute._addFileChildren(
   AdminDatasetRouteChildren,
 )
 
-interface AdminFormsRouteChildren {
-  AdminFormsIdRoute: typeof AdminFormsIdRoute
-}
-
-const AdminFormsRouteChildren: AdminFormsRouteChildren = {
-  AdminFormsIdRoute: AdminFormsIdRoute,
-}
-
-const AdminFormsRouteWithChildren = AdminFormsRoute._addFileChildren(
-  AdminFormsRouteChildren,
-)
-
 interface AdminLayananRouteChildren {
   AdminLayananDisposisiInboxRoute: typeof AdminLayananDisposisiInboxRoute
   AdminLayananEscalationRoute: typeof AdminLayananEscalationRoute
@@ -2212,7 +2200,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminDatasetRoute: AdminDatasetRouteWithChildren,
   AdminDesaRoute: AdminDesaRoute,
   AdminEksekutifRoute: AdminEksekutifRoute,
-  AdminFormsRoute: AdminFormsRouteWithChildren,
   AdminGovernanceRoute: AdminGovernanceRoute,
   AdminHariLiburRoute: AdminHariLiburRoute,
   AdminIkmRoute: AdminIkmRoute,
@@ -2263,6 +2250,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSystemUatRoute: AdminSystemUatRoute,
   ApiInternalMetricsRoute: ApiInternalMetricsRoute,
   AsnScanTokenRoute: AsnScanTokenRoute,
+  AdminFormsIndexRoute: AdminFormsIndexRoute,
   ApiPublicHooksAsetSusutBulananRoute: ApiPublicHooksAsetSusutBulananRoute,
   ApiPublicHooksAsetWarrantyReminderRoute:
     ApiPublicHooksAsetWarrantyReminderRoute,
@@ -2283,3 +2271,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
