@@ -4512,6 +4512,20 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin_desa: { Args: { _uid: string }; Returns: boolean }
+      is_admin_of_desa: {
+        Args: { _desa: string; _uid: string }
+        Returns: boolean
+      }
+      is_admin_of_opd: {
+        Args: { _opd: string; _uid: string }
+        Returns: boolean
+      }
+      is_admin_opd: { Args: { _uid: string }; Returns: boolean }
+      is_admin_pemda: { Args: { _uid: string }; Returns: boolean }
+      is_asn: { Args: { _uid: string }; Returns: boolean }
+      is_elevated: { Args: { _uid: string }; Returns: boolean }
+      is_elevated_view: { Args: { _uid: string }; Returns: boolean }
       is_payroll_locked: {
         Args: { _opd_id: string; _ts: string }
         Returns: boolean
@@ -4521,6 +4535,7 @@ export type Database = {
         Returns: boolean
       }
       is_pimpinan: { Args: { _user_id: string }; Returns: boolean }
+      is_super_admin: { Args: { _uid: string }; Returns: boolean }
       is_warga_in_admin_desa: {
         Args: { _pemohon_id: string; _user_id: string }
         Returns: boolean
