@@ -29,6 +29,8 @@ const TYPE_LABEL: Record<Target["target_type"], string> = {
 };
 
 const TYPE_OPTIONS: Target["target_type"][] = ["role", "opd", "asn_type", "position", "individu"];
+// unit_kerja masih dipertahankan di select hanya untuk menampilkan baris lama;
+// belum bisa diresolusi karena profiles tidak memiliki kolom unit_kerja_id.
 
 export function FormTargetsTab({
   targets,
@@ -115,6 +117,9 @@ export function FormTargetsTab({
                 {TYPE_LABEL[tp]}
               </option>
             ))}
+            {t.target_type === "unit_kerja" && (
+              <option value="unit_kerja">{TYPE_LABEL.unit_kerja} (legacy)</option>
+            )}
           </select>
 
           <div className="col-span-7">
