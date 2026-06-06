@@ -3,7 +3,7 @@
 // dan ditampilkan sebagai drawer pada perangkat mobile (Android).
 import { type ReactNode, useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { LayoutDashboard, Inbox, Users, FileClock, Database as DbIcon, ChevronRight, LogOut, Building2, Newspaper, UserSquare2, Star, MessageSquare, ListChecks, ScanLine, MapPin, Settings, Menu, X, Palette, Boxes, Shield as ShieldIcon } from "lucide-react";
+import { LayoutDashboard, Inbox, Users, FileClock, Database as DbIcon, ChevronRight, LogOut, Building2, Newspaper, UserSquare2, Star, MessageSquare, ListChecks, ScanLine, MapPin, Settings, Menu, X, Palette, Boxes } from "lucide-react";
 
 import lambang from "@/assets/lambang.png";
 import { useAuth } from "@/lib/auth-context";
@@ -66,8 +66,7 @@ const superNavGroups: NavGroup[] = [
   {
     title: "Pengguna & Organisasi",
     items: [
-      { to: "/admin/users", label: "Pengguna", icon: Users },
-      { to: "/admin/rbac", label: "Hak Akses", icon: ShieldIcon },
+      { to: "/admin/users", label: "Pengguna & Hak Akses", icon: Users },
       { to: "/admin/opd", label: "OPD", icon: Building2 },
       { to: "/admin/desa", label: "Desa", icon: MapPin },
       { to: "/admin/pejabat", label: "Pejabat", icon: UserSquare2 },

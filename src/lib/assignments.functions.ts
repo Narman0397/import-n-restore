@@ -27,8 +27,8 @@ async function resolveTargetUserIds(formId: string, formOpdId: string | null): P
   // Set untuk dedupe
   const out = new Map<string, { user_id: string; opd_id: string | null }>();
 
-  // 1. user spesifik
-  const userIds = t.filter((x) => x.target_type === "user").map((x) => x.target_value);
+  // 1. user spesifik (target_type = 'individu')
+  const userIds = t.filter((x) => x.target_type === "individu").map((x) => x.target_value);
   if (userIds.length) {
     const { data } = await supabaseAdmin
       .from("profiles")
@@ -71,8 +71,8 @@ async function resolveTargetUserIds(formId: string, formOpdId: string | null): P
     for (const p of data ?? []) out.set(p.id, { user_id: p.id, opd_id: p.opd_id });
   }
 
-  // 5. system_position
-  const sysPos = t.filter((x) => x.target_type === "system_position").map((x) => x.target_value);
+  // 5. system_position (DB enum value = 'position')
+  const sysPos = t.filter((x) => x.target_type === "position").map((x) => x.target_value);
   if (sysPos.length) {
     const { data } = await supabaseAdmin
       .from("profiles")
