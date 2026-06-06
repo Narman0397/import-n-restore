@@ -3,7 +3,7 @@
 // dan ditampilkan sebagai drawer pada perangkat mobile (Android).
 import { type ReactNode, useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { LayoutDashboard, Inbox, Users, FileClock, Database as DbIcon, ChevronRight, LogOut, Building2, Newspaper, UserSquare2, Star, MessageSquare, ListChecks, ScanLine, MapPin, Settings, Menu, X, Palette, Boxes, Shield as ShieldIcon } from "lucide-react";
+import { LayoutDashboard, Inbox, Users, FileClock, Database as DbIcon, ChevronRight, LogOut, Building2, Newspaper, UserSquare2, Star, MessageSquare, ListChecks, ScanLine, MapPin, Settings, Menu, X, Palette, Boxes } from "lucide-react";
 
 import lambang from "@/assets/lambang.png";
 import { useAuth } from "@/lib/auth-context";
