@@ -66,8 +66,7 @@ const superNavGroups: NavGroup[] = [
   {
     title: "Pengguna & Organisasi",
     items: [
-      { to: "/admin/users", label: "Pengguna", icon: Users },
-      { to: "/admin/rbac", label: "Hak Akses", icon: ShieldIcon },
+      { to: "/admin/users", label: "Pengguna & Hak Akses", icon: Users },
       { to: "/admin/opd", label: "OPD", icon: Building2 },
       { to: "/admin/desa", label: "Desa", icon: MapPin },
       { to: "/admin/pejabat", label: "Pejabat", icon: UserSquare2 },
