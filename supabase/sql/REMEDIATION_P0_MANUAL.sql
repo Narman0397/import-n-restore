@@ -112,7 +112,7 @@ SELECT public._lovable_exec_sql($SQL$
       OR public.has_role(public._lovable_request_uid(),'admin_pemda')
       OR public.has_role(public._lovable_request_uid(),'pimpinan')
       OR (public.has_role(public._lovable_request_uid(),'admin_opd')
-          AND opd_tujuan = public.get_user_opd(public._lovable_request_uid()))
+          AND opd_id = public.get_user_opd(public._lovable_request_uid()))
     );
 
   DROP POLICY IF EXISTS "laporan_update_admin_scope" ON public.laporan_masyarakat;
@@ -122,13 +122,13 @@ SELECT public._lovable_exec_sql($SQL$
       public.has_role(public._lovable_request_uid(),'super_admin')
       OR public.has_role(public._lovable_request_uid(),'admin_pemda')
       OR (public.has_role(public._lovable_request_uid(),'admin_opd')
-          AND opd_tujuan = public.get_user_opd(public._lovable_request_uid()))
+          AND opd_id = public.get_user_opd(public._lovable_request_uid()))
     )
     WITH CHECK (
       public.has_role(public._lovable_request_uid(),'super_admin')
       OR public.has_role(public._lovable_request_uid(),'admin_pemda')
       OR (public.has_role(public._lovable_request_uid(),'admin_opd')
-          AND opd_tujuan = public.get_user_opd(public._lovable_request_uid()))
+          AND opd_id = public.get_user_opd(public._lovable_request_uid()))
     );
 
   GRANT SELECT, UPDATE ON public.laporan_masyarakat TO authenticated;
