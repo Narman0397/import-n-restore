@@ -8,7 +8,20 @@
 --
 -- Solusi: bungkus perintah privileged via fungsi SECURITY DEFINER
 -- `public._lovable_exec_sql(text)` yang dieksekusi sebagai pemilik fungsi.
+--
+-- Catatan tambahan:
+-- Jangan panggil `auth.uid()` langsung di dalam blok dynamic SQL SECURITY
+-- DEFINER karena owner fungsi helper bisa tidak punya USAGE ke schema `auth`.
+-- Gunakan helper berbasis current_setting() di schema public.
 -- ============================================================
+
+CREATE OR REPLACE FUNCTION public._lovable_request_uid()
+RETURNS uuid
+LANGUAGE sql
+STABLE
+AS $function$
+  SELECT NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid
+$function$;
 
 -- ------------------------------------------------------------
 -- 1. profiles  → aktifkan RLS + policy berbasis auth.uid()
@@ -20,38 +33,41 @@ SELECT public._lovable_exec_sql($SQL$
   CREATE POLICY "profiles_select_self_or_admin"
     ON public.profiles FOR SELECT TO authenticated
     USING (
-      id = auth.uid()
-      OR public.has_role(auth.uid(), 'super_admin')
-      OR public.has_role(auth.uid(), 'admin_pemda')
-      OR public.has_role(auth.uid(), 'pimpinan')
-      OR (public.has_role(auth.uid(), 'admin_opd')
-          AND opd_id = public.get_user_opd(auth.uid()))
-      OR (public.has_role(auth.uid(), 'admin_desa')
-          AND desa = public.get_user_desa(auth.uid()))
+      id = public._lovable_request_uid()
+      OR public.has_role(public._lovable_request_uid(), 'super_admin')
+      OR public.has_role(public._lovable_request_uid(), 'admin_pemda')
+      OR public.has_role(public._lovable_request_uid(), 'pimpinan')
+      OR (public.has_role(public._lovable_request_uid(), 'admin_opd')
+          AND opd_id = public.get_user_opd(public._lovable_request_uid()))
+      OR (public.has_role(public._lovable_request_uid(), 'admin_desa')
+          AND desa = public.get_user_desa(public._lovable_request_uid()))
     );
 
   DROP POLICY IF EXISTS "profiles_update_self_or_admin" ON public.profiles;
   CREATE POLICY "profiles_update_self_or_admin"
     ON public.profiles FOR UPDATE TO authenticated
     USING (
-      id = auth.uid()
-      OR public.has_role(auth.uid(), 'super_admin')
-      OR public.has_role(auth.uid(), 'admin_pemda')
-      OR (public.has_role(auth.uid(), 'admin_desa')
-          AND desa = public.get_user_desa(auth.uid()))
+      id = public._lovable_request_uid()
+      OR public.has_role(public._lovable_request_uid(), 'super_admin')
+      OR public.has_role(public._lovable_request_uid(), 'admin_pemda')
+      OR (public.has_role(public._lovable_request_uid(), 'admin_desa')
+          AND desa = public.get_user_desa(public._lovable_request_uid()))
     )
     WITH CHECK (
-      id = auth.uid()
-      OR public.has_role(auth.uid(), 'super_admin')
-      OR public.has_role(auth.uid(), 'admin_pemda')
-      OR (public.has_role(auth.uid(), 'admin_desa')
-          AND desa = public.get_user_desa(auth.uid()))
+      id = public._lovable_request_uid()
+      OR public.has_role(public._lovable_request_uid(), 'super_admin')
+      OR public.has_role(public._lovable_request_uid(), 'admin_pemda')
+      OR (public.has_role(public._lovable_request_uid(), 'admin_desa')
+          AND desa = public.get_user_desa(public._lovable_request_uid()))
     );
 
   DROP POLICY IF EXISTS "profiles_insert_self" ON public.profiles;
   CREATE POLICY "profiles_insert_self"
     ON public.profiles FOR INSERT TO authenticated
-    WITH CHECK (id = auth.uid() OR public.has_role(auth.uid(),'super_admin'));
+    WITH CHECK (
+      id = public._lovable_request_uid()
+      OR public.has_role(public._lovable_request_uid(),'super_admin')
+    );
 
   GRANT SELECT, INSERT, UPDATE ON public.profiles TO authenticated;
   GRANT ALL ON public.profiles TO service_role;
@@ -67,16 +83,16 @@ SELECT public._lovable_exec_sql($SQL$
   CREATE POLICY "user_roles_select_self_or_admin"
     ON public.user_roles FOR SELECT TO authenticated
     USING (
-      user_id = auth.uid()
-      OR public.has_role(auth.uid(),'super_admin')
-      OR public.has_role(auth.uid(),'admin_pemda')
+      user_id = public._lovable_request_uid()
+      OR public.has_role(public._lovable_request_uid(),'super_admin')
+      OR public.has_role(public._lovable_request_uid(),'admin_pemda')
     );
 
   DROP POLICY IF EXISTS "user_roles_all_super_admin" ON public.user_roles;
   CREATE POLICY "user_roles_all_super_admin"
     ON public.user_roles FOR ALL TO authenticated
-    USING (public.has_role(auth.uid(),'super_admin'))
-    WITH CHECK (public.has_role(auth.uid(),'super_admin'));
+    USING (public.has_role(public._lovable_request_uid(),'super_admin'))
+    WITH CHECK (public.has_role(public._lovable_request_uid(),'super_admin'));
 
   GRANT SELECT ON public.user_roles TO authenticated;
   GRANT ALL ON public.user_roles TO service_role;
@@ -92,27 +108,27 @@ SELECT public._lovable_exec_sql($SQL$
   CREATE POLICY "laporan_select_admin_scope"
     ON public.laporan_masyarakat FOR SELECT TO authenticated
     USING (
-      public.has_role(auth.uid(),'super_admin')
-      OR public.has_role(auth.uid(),'admin_pemda')
-      OR public.has_role(auth.uid(),'pimpinan')
-      OR (public.has_role(auth.uid(),'admin_opd')
-          AND opd_tujuan = public.get_user_opd(auth.uid()))
+      public.has_role(public._lovable_request_uid(),'super_admin')
+      OR public.has_role(public._lovable_request_uid(),'admin_pemda')
+      OR public.has_role(public._lovable_request_uid(),'pimpinan')
+      OR (public.has_role(public._lovable_request_uid(),'admin_opd')
+          AND opd_tujuan = public.get_user_opd(public._lovable_request_uid()))
     );
 
   DROP POLICY IF EXISTS "laporan_update_admin_scope" ON public.laporan_masyarakat;
   CREATE POLICY "laporan_update_admin_scope"
     ON public.laporan_masyarakat FOR UPDATE TO authenticated
     USING (
-      public.has_role(auth.uid(),'super_admin')
-      OR public.has_role(auth.uid(),'admin_pemda')
-      OR (public.has_role(auth.uid(),'admin_opd')
-          AND opd_tujuan = public.get_user_opd(auth.uid()))
+      public.has_role(public._lovable_request_uid(),'super_admin')
+      OR public.has_role(public._lovable_request_uid(),'admin_pemda')
+      OR (public.has_role(public._lovable_request_uid(),'admin_opd')
+          AND opd_tujuan = public.get_user_opd(public._lovable_request_uid()))
     )
     WITH CHECK (
-      public.has_role(auth.uid(),'super_admin')
-      OR public.has_role(auth.uid(),'admin_pemda')
-      OR (public.has_role(auth.uid(),'admin_opd')
-          AND opd_tujuan = public.get_user_opd(auth.uid()))
+      public.has_role(public._lovable_request_uid(),'super_admin')
+      OR public.has_role(public._lovable_request_uid(),'admin_pemda')
+      OR (public.has_role(public._lovable_request_uid(),'admin_opd')
+          AND opd_tujuan = public.get_user_opd(public._lovable_request_uid()))
     );
 
   GRANT SELECT, UPDATE ON public.laporan_masyarakat TO authenticated;
