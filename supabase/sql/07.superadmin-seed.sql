@@ -2,37 +2,36 @@
 -- 07. SEED SUPER ADMIN - Buat user terverifikasi dengan role super_admin
 -- =====================================================================
 -- Cara pakai:
---   1. Buka Supabase SQL Editor.
---   2. Ganti nilai variabel di blok "KONFIGURASI" di bawah:
---        - v_email          : email login super admin
---        - v_password       : password login (min 6 karakter)
---        - v_username       : username (huruf kecil, angka, . _ -)
---        - v_nama_lengkap   : nama lengkap untuk profil
---        - v_no_hp          : (opsional) nomor HP
+--   1. Buka Supabase SQL Editor (login sebagai pemilik project).
+--   2. Ganti nilai variabel di blok "KONFIGURASI" di bawah.
 --   3. Jalankan seluruh file ini.
 --   4. Login di halaman /auth memakai email + password tersebut.
 --
 -- Script ini idempotent:
---   - Jika email sudah ada, akan reset password + tandai email_confirmed
+--   - Jika email sudah ada: reset password + tandai email_confirmed
 --     dan PASTIKAN role super_admin terpasang.
---   - Jika belum ada, akan dibuat baru lengkap dengan profile + role.
+--   - Jika belum ada: dibuat baru lengkap dengan profile + role.
+--
+-- Catatan: trigger handle_new_user() otomatis membuat baris di
+-- public.profiles dan public.user_roles (role 'warga'). Script ini
+-- meng-upsert profil dan menambahkan role 'super_admin' di atasnya.
 -- =====================================================================
 
 DO $$
 DECLARE
   -- =========================== KONFIGURASI ===========================
-  v_email         text := 'superadmin@example.com';   -- GANTI EMAIL
-  v_password      text := 'GantiPasswordKuat#2026';   -- GANTI PASSWORD
-  v_username      text := 'superadmin';               -- GANTI USERNAME (opsional)
-  v_nama_lengkap  text := 'Super Administrator';      -- GANTI NAMA
-  v_no_hp         text := NULL;                       -- contoh: '081234567890'
+  v_email         text := 'narman@example.com';      -- GANTI EMAIL
+  v_password      text := 'Poogalampa97';            -- GANTI PASSWORD (min 6 karakter)
+  v_username      text := 'narman';                  -- GANTI USERNAME (huruf kecil, angka, . _ -)
+  v_nama_lengkap  text := 'Narman';                  -- GANTI NAMA LENGKAP
+  v_no_hp         text := NULL;                      -- contoh: '081234567890'
   -- ===================================================================
 
   v_user_id   uuid;
   v_now       timestamptz := now();
   v_hashed    text;
 BEGIN
-  -- Hash password memakai ekstensi pgcrypto (sama seperti GoTrue/Supabase Auth).
+  -- Hash password memakai pgcrypto (kompatibel dengan GoTrue / Supabase Auth).
   CREATE EXTENSION IF NOT EXISTS pgcrypto;
   v_hashed := crypt(v_password, gen_salt('bf'));
 
@@ -82,7 +81,8 @@ BEGIN
      WHERE id = v_user_id;
   END IF;
 
-  -- 3) Upsert profile (terverifikasi)
+  -- 3) Upsert profile (terverifikasi). Trigger handle_new_user mungkin
+  --    sudah membuat baris kosong; di sini kita timpa dengan data lengkap.
   INSERT INTO public.profiles (id, nama_lengkap, no_hp, username, verified_at, verified_by, status, created_at, updated_at)
   VALUES (v_user_id, v_nama_lengkap, v_no_hp, v_username, v_now, v_user_id, 'active', v_now, v_now)
   ON CONFLICT (id) DO UPDATE
@@ -94,7 +94,10 @@ BEGIN
          status       = 'active',
          updated_at   = v_now;
 
-  -- 4) Pastikan role super_admin terpasang
+  -- 4) Pastikan role super_admin terpasang.
+  --    Trigger protect_super_admin_role hanya menolak INSERT bila auth.uid()
+  --    tidak NULL (yaitu dari aplikasi). Di SQL Editor auth.uid() = NULL,
+  --    sehingga INSERT ini diizinkan.
   INSERT INTO public.user_roles (user_id, role)
   VALUES (v_user_id, 'super_admin')
   ON CONFLICT (user_id, role) DO NOTHING;
@@ -102,10 +105,10 @@ BEGIN
   RAISE NOTICE 'Super admin siap. user_id=% email=%', v_user_id, v_email;
 END $$;
 
--- Verifikasi cepat (opsional):
+-- Verifikasi cepat (opsional) — ganti email sesuai konfigurasi di atas:
 -- SELECT u.id, u.email, p.username, p.verified_at, array_agg(r.role) AS roles
 -- FROM auth.users u
 -- LEFT JOIN public.profiles p ON p.id = u.id
 -- LEFT JOIN public.user_roles r ON r.user_id = u.id
--- WHERE lower(u.email) = lower('superadmin@example.com')
+-- WHERE lower(u.email) = lower('narman@example.com')
 -- GROUP BY u.id, u.email, p.username, p.verified_at;
