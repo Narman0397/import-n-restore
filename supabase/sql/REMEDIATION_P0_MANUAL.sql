@@ -15,12 +15,18 @@
 -- Gunakan helper berbasis current_setting() di schema public.
 -- ============================================================
 
+-- Setara dengan auth.uid() Supabase: baca legacy GUC per-claim ATAU JSON
+-- claims modern dari PostgREST. Bila hanya satu yang ada, fungsi tetap
+-- mengembalikan uid yang benar; tanpa fallback ini policy bisa deny-all.
 CREATE OR REPLACE FUNCTION public._lovable_request_uid()
 RETURNS uuid
 LANGUAGE sql
 STABLE
 AS $function$
-  SELECT NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid
+  SELECT COALESCE(
+    NULLIF(current_setting('request.jwt.claim.sub', true), ''),
+    NULLIF(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub'
+  )::uuid
 $function$;
 
 -- ------------------------------------------------------------
