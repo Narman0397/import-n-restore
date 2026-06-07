@@ -35,6 +35,16 @@ export const fieldValidationSchema = z
   .partial();
 export type FieldValidation = z.infer<typeof fieldValidationSchema>;
 
+export const visibleIfSchema = z
+  .object({
+    field: z.string().min(1).max(60),
+    op: z.enum(["eq", "neq", "in", "not_in", "filled", "empty"]),
+    value: z.union([z.string().max(200), z.array(z.string().max(200)).max(50)]).optional(),
+  })
+  .nullable()
+  .optional();
+export type VisibleIfRule = z.infer<typeof visibleIfSchema>;
+
 export const formFieldSchema = z.object({
   kode: z
     .string()
@@ -49,9 +59,38 @@ export const formFieldSchema = z.object({
   help_text: z.string().max(500).optional().nullable(),
   options: z.array(fieldOptionSchema).max(50).default([]),
   validation: fieldValidationSchema.default({}),
+  visible_if: visibleIfSchema,
   urutan: z.number().int().nonnegative().default(0),
 });
 export type FormField = z.infer<typeof formFieldSchema>;
+
+/** Evaluasi kondisi visible_if terhadap nilai form saat ini. */
+export function isFieldVisible(field: FormField, values: Record<string, unknown>): boolean {
+  const rule = field.visible_if;
+  if (!rule) return true;
+  const v = values[rule.field];
+  const asStr = v == null ? "" : Array.isArray(v) ? v.map(String) : String(v);
+  switch (rule.op) {
+    case "filled":
+      return Array.isArray(asStr) ? asStr.length > 0 : asStr !== "";
+    case "empty":
+      return Array.isArray(asStr) ? asStr.length === 0 : asStr === "";
+    case "eq":
+      return Array.isArray(asStr) ? asStr.includes(String(rule.value ?? "")) : asStr === String(rule.value ?? "");
+    case "neq":
+      return Array.isArray(asStr) ? !asStr.includes(String(rule.value ?? "")) : asStr !== String(rule.value ?? "");
+    case "in": {
+      const list = Array.isArray(rule.value) ? rule.value : rule.value ? [rule.value] : [];
+      return Array.isArray(asStr) ? asStr.some((x) => list.includes(x)) : list.includes(asStr);
+    }
+    case "not_in": {
+      const list = Array.isArray(rule.value) ? rule.value : rule.value ? [rule.value] : [];
+      return Array.isArray(asStr) ? !asStr.some((x) => list.includes(x)) : !list.includes(asStr);
+    }
+    default:
+      return true;
+  }
+}
 
 export const formSchemaSnapshotSchema = z.object({
   version: z.literal(1),
