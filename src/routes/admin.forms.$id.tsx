@@ -16,6 +16,7 @@ import type { FormField } from "@/features/forms/schema/types";
 import { FormMetaTab } from "@/features/forms/builder/FormMetaTab";
 import { FormFieldsTab } from "@/features/forms/builder/FormFieldsTab";
 import { FormTargetsTab } from "@/features/forms/builder/FormTargetsTab";
+import { FormLivePreview } from "@/features/forms/builder/FormLivePreview";
 import type { FormMeta, Target } from "@/features/forms/builder/types";
 import { Send, Archive, ArrowLeft, Globe, FileSpreadsheet, Save } from "lucide-react";
 
@@ -43,7 +44,7 @@ function Page() {
   });
   const [fields, setFields] = useState<FormField[]>([]);
   const [targets, setTargets] = useState<Target[]>([]);
-  const [tab, setTab] = useState<"meta" | "fields" | "targets" | "akses">("meta");
+  const [tab, setTab] = useState<"meta" | "fields" | "preview" | "targets" | "akses">("meta");
   const [isPublic, setIsPublic] = useState(false);
   const [slug, setSlug] = useState("");
 
@@ -72,6 +73,7 @@ function Page() {
           help_text: f.help_text,
           options: (f.options as FormField["options"]) ?? [],
           validation: (f.validation as FormField["validation"]) ?? {},
+          visible_if: ((f as unknown as { visible_if?: FormField["visible_if"] }).visible_if) ?? null,
           urutan: f.urutan ?? i,
         })),
       );
