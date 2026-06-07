@@ -30,6 +30,7 @@ export function FormFieldsTab({
         <FieldEditor
           key={i}
           field={f}
+          allFields={fields}
           readOnly={readOnly}
           onChange={(nf) => {
             const arr = [...fields];

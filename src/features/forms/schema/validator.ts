@@ -1,8 +1,9 @@
 // Membangun zod schema RUNTIME dari snapshot form, untuk memvalidasi
 // data submission terhadap kontrak form pada saat publish (bukan kontrak
-// live yang bisa berubah).
+// live yang bisa berubah). Mendukung visible_if: field yang tersembunyi
+// dianggap tidak wajib divalidasi.
 import { z, type ZodTypeAny } from "zod";
-import type { FormField, FormSchemaSnapshot } from "./types";
+import { isFieldVisible, type FormField, type FormSchemaSnapshot } from "./types";
 
 function fieldValidator(f: FormField): ZodTypeAny {
   switch (f.tipe) {
@@ -58,7 +59,23 @@ function fieldValidator(f: FormField): ZodTypeAny {
 }
 
 export function buildSubmissionValidator(snapshot: FormSchemaSnapshot) {
-  const shape: Record<string, ZodTypeAny> = {};
-  for (const f of snapshot.fields) shape[f.kode] = fieldValidator(f);
-  return z.object(shape).passthrough();
+  return z
+    .object({})
+    .passthrough()
+    .superRefine((raw, ctx) => {
+      const values = raw as Record<string, unknown>;
+      for (const f of snapshot.fields) {
+        if (!isFieldVisible(f, values)) continue;
+        const result = fieldValidator(f).safeParse(values[f.kode]);
+        if (!result.success) {
+          for (const issue of result.error.issues) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: [f.kode, ...(issue.path as (string | number)[])],
+              message: issue.message,
+            });
+          }
+        }
+      }
+    });
 }

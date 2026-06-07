@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Save, Trash2, Search } from "lucide-react";
+import { Plus, Save, Trash2, Search, RefreshCw } from "lucide-react";
 import type { Target } from "./types";
 import {
   ROLES,
@@ -10,6 +10,7 @@ import {
   POSITION_LABEL,
 } from "@/features/rbac/constants";
 import { listOpdsForTarget, searchProfilesForTarget } from "@/lib/forms-options.functions";
+import { syncAssignmentsForForm } from "@/lib/assignments.functions";
 
 type Opd = { id: string; nama: string; singkatan: string | null };
 type ProfileHit = {
@@ -33,17 +34,22 @@ const TYPE_OPTIONS: Target["target_type"][] = ["role", "opd", "asn_type", "posit
 // belum bisa diresolusi karena profiles tidak memiliki kolom unit_kerja_id.
 
 export function FormTargetsTab({
+  formId,
+  formStatus,
   targets,
   setTargets,
   busy,
   onSave,
 }: {
+  formId: string;
+  formStatus: string;
   targets: Target[];
   setTargets: (t: Target[]) => void;
   busy: boolean;
   onSave: () => void;
 }) {
   const [opds, setOpds] = useState<Opd[]>([]);
+  const [syncing, setSyncing] = useState(false);
   // map user_id → display label, untuk render row individu yang sudah tersimpan.
   const [userLabels, setUserLabels] = useState<Record<string, string>>({});
 
@@ -220,7 +226,33 @@ export function FormTargetsTab({
         >
           <Save className="h-4 w-4" /> Simpan Target
         </button>
+        {formStatus === "published" && (
+          <button
+            onClick={async () => {
+              if (!confirm("Sinkronkan assignment? Sistem akan membuat assignment baru bagi user yang masuk target tetapi belum punya assignment.")) return;
+              setSyncing(true);
+              try {
+                const r = (await syncAssignmentsForForm({ data: { form_id: formId } })) as unknown as { added: number };
+                alert(r.added > 0 ? `${r.added} assignment baru dibuat.` : "Tidak ada user baru yang perlu di-assign.");
+              } catch (e) {
+                alert(e instanceof Error ? e.message : "Gagal sinkronisasi");
+              } finally {
+                setSyncing(false);
+              }
+            }}
+            disabled={busy || syncing}
+            className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-2 text-sm"
+            title="Buat assignment baru untuk user yang masuk target tetapi belum punya assignment"
+          >
+            <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} /> Sinkronkan Assignment
+          </button>
+        )}
       </div>
+      {formStatus === "published" && (
+        <p className="text-[11px] text-muted-foreground">
+          Form sudah dipublish. Perubahan target akan memengaruhi user yang menerima assignment baru saat tombol <strong>Sinkronkan Assignment</strong> ditekan. Assignment lama tidak dihapus.
+        </p>
+      )}
     </div>
   );
 }

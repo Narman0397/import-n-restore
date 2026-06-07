@@ -16,6 +16,7 @@ import type { FormField } from "@/features/forms/schema/types";
 import { FormMetaTab } from "@/features/forms/builder/FormMetaTab";
 import { FormFieldsTab } from "@/features/forms/builder/FormFieldsTab";
 import { FormTargetsTab } from "@/features/forms/builder/FormTargetsTab";
+import { FormLivePreview } from "@/features/forms/builder/FormLivePreview";
 import type { FormMeta, Target } from "@/features/forms/builder/types";
 import { Send, Archive, ArrowLeft, Globe, FileSpreadsheet, Save } from "lucide-react";
 
@@ -43,7 +44,7 @@ function Page() {
   });
   const [fields, setFields] = useState<FormField[]>([]);
   const [targets, setTargets] = useState<Target[]>([]);
-  const [tab, setTab] = useState<"meta" | "fields" | "targets" | "akses">("meta");
+  const [tab, setTab] = useState<"meta" | "fields" | "preview" | "targets" | "akses">("meta");
   const [isPublic, setIsPublic] = useState(false);
   const [slug, setSlug] = useState("");
 
@@ -72,6 +73,7 @@ function Page() {
           help_text: f.help_text,
           options: (f.options as FormField["options"]) ?? [],
           validation: (f.validation as FormField["validation"]) ?? {},
+          visible_if: ((f as unknown as { visible_if?: FormField["visible_if"] }).visible_if) ?? null,
           urutan: f.urutan ?? i,
         })),
       );
@@ -189,9 +191,9 @@ function Page() {
       </div>
 
       <div className="flex gap-2 border-b border-border">
-        {(["meta", "fields", "targets", "akses"] as const).map((t) => (
+        {(["meta", "fields", "preview", "targets", "akses"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} className={`px-3 py-2 text-sm font-medium ${tab === t ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>
-            {t === "meta" ? "Metadata" : t === "fields" ? "Field" : t === "targets" ? "Target Pengisi" : "Akses Publik"}
+            {t === "meta" ? "Metadata" : t === "fields" ? "Field" : t === "preview" ? "Pratinjau" : t === "targets" ? "Target Pengisi" : "Akses Publik"}
           </button>
         ))}
       </div>
@@ -202,8 +204,11 @@ function Page() {
       {tab === "fields" && (
         <FormFieldsTab fields={fields} setFields={setFields} readOnly={readOnly} busy={busy} onSave={saveFields} />
       )}
+      {tab === "preview" && (
+        <FormLivePreview fields={fields} judul={meta.judul} />
+      )}
       {tab === "targets" && (
-        <FormTargetsTab targets={targets} setTargets={setTargets} busy={busy} onSave={saveTargetsAct} />
+        <FormTargetsTab formId={id} formStatus={meta.status} targets={targets} setTargets={setTargets} busy={busy} onSave={saveTargetsAct} />
       )}
       {tab === "akses" && (
         <div className="space-y-4 rounded-xl border border-border bg-card p-4">

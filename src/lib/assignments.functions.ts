@@ -133,6 +133,32 @@ export async function generateAssignmentsForForm(formId: string): Promise<number
   return toInsert.length;
 }
 
+/**
+ * Sinkronkan assignment setelah perubahan target pada form yang sudah
+ * dipublish. Tambah assignment untuk user baru yang masuk target; tidak
+ * menghapus assignment lama agar histori submission tetap utuh.
+ */
+export const syncAssignmentsForForm = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ form_id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { userId } = context as { userId: string };
+    const { data: form } = await supabaseAdmin
+      .from("forms")
+      .select("id,opd_pemilik_id,status,created_by")
+      .eq("id", data.form_id)
+      .maybeSingle();
+    if (!form) throw new Error("Form tidak ditemukan");
+    const ctx = await getUserContext(supabaseAdmin, userId);
+    if (!ctx.isElevated && !(ctx.isAdminOpd && ctx.opdId === form.opd_pemilik_id) && form.created_by !== userId) {
+      throw new Error("Akses ditolak");
+    }
+    if (form.status !== "published") throw new Error("Form harus berstatus published");
+    const added = await generateAssignmentsForForm(data.form_id);
+    log.info("assignment.sync.ok", { userId, formId: data.form_id, added });
+    return { added };
+  });
+
 export const listMyAssignments = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
