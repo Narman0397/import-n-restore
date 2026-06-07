@@ -23,6 +23,7 @@ export function emptyField(idx: number): FormField {
     help_text: null,
     options: [],
     validation: {},
+    visible_if: null,
     urutan: idx,
   };
 }
