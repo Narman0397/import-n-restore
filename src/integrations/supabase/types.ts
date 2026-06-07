@@ -1651,6 +1651,7 @@ export type Database = {
           tipe: Database["public"]["Enums"]["form_field_type"]
           urutan: number
           validation: Json
+          visible_if: Json | null
         }
         Insert: {
           created_at?: string
@@ -1665,6 +1666,7 @@ export type Database = {
           tipe: Database["public"]["Enums"]["form_field_type"]
           urutan?: number
           validation?: Json
+          visible_if?: Json | null
         }
         Update: {
           created_at?: string
@@ -1679,6 +1681,7 @@ export type Database = {
           tipe?: Database["public"]["Enums"]["form_field_type"]
           urutan?: number
           validation?: Json
+          visible_if?: Json | null
         }
         Relationships: [
           {
