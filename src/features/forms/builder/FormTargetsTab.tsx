@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Save, Trash2, Search } from "lucide-react";
+import { Plus, Save, Trash2, Search, RefreshCw } from "lucide-react";
 import type { Target } from "./types";
 import {
   ROLES,
@@ -10,6 +10,7 @@ import {
   POSITION_LABEL,
 } from "@/features/rbac/constants";
 import { listOpdsForTarget, searchProfilesForTarget } from "@/lib/forms-options.functions";
+import { syncAssignmentsForForm } from "@/lib/assignments.functions";
 
 type Opd = { id: string; nama: string; singkatan: string | null };
 type ProfileHit = {
@@ -33,17 +34,22 @@ const TYPE_OPTIONS: Target["target_type"][] = ["role", "opd", "asn_type", "posit
 // belum bisa diresolusi karena profiles tidak memiliki kolom unit_kerja_id.
 
 export function FormTargetsTab({
+  formId,
+  formStatus,
   targets,
   setTargets,
   busy,
   onSave,
 }: {
+  formId: string;
+  formStatus: string;
   targets: Target[];
   setTargets: (t: Target[]) => void;
   busy: boolean;
   onSave: () => void;
 }) {
   const [opds, setOpds] = useState<Opd[]>([]);
+  const [syncing, setSyncing] = useState(false);
   // map user_id → display label, untuk render row individu yang sudah tersimpan.
   const [userLabels, setUserLabels] = useState<Record<string, string>>({});
 
