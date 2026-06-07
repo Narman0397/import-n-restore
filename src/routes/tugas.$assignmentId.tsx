@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth-context";
 import { getAssignment } from "@/lib/assignments.functions";
 import { submitSubmission, getSubmission } from "@/lib/submissions.functions";
 import { PageShell } from "@/components/site/PageShell";
-import type { FormSchemaSnapshot } from "@/features/forms/schema/types";
+import { isFieldVisible, type FormSchemaSnapshot } from "@/features/forms/schema/types";
 import { FieldRenderer } from "@/features/forms/renderer/FieldRenderer";
 import type { FileRow, SubmissionRow } from "@/features/forms/renderer/types";
 import { useFormDraft } from "@/features/forms/hooks/useFormDraft";
@@ -179,30 +179,33 @@ function Page() {
         )}
 
         <form onSubmit={(e) => e.preventDefault()} className="mt-4 space-y-4">
-          {snapshot.fields.map((f) => (
-            <FieldRenderer
-              key={f.kode}
-              field={f}
-              value={data[f.kode]}
-              onChange={(v) => {
-                setField(f.kode, v);
-                if (fieldErrors[f.kode]) {
-                  setFieldErrors((prev) => {
-                    const next = { ...prev };
-                    delete next[f.kode];
-                    return next;
-                  });
-                }
-              }}
-              readOnly={readOnly}
-              submissionId={submission?.id ?? null}
-              files={files.filter((x) => x.field_kode === f.kode)}
-              onFilesChanged={async () => {
-                if (submission) await loadFiles(submission.id);
-              }}
-              error={fieldErrors[f.kode] ?? null}
-            />
-          ))}
+          {snapshot.fields.map((f) => {
+            if (!isFieldVisible(f, data)) return null;
+            return (
+              <FieldRenderer
+                key={f.kode}
+                field={f}
+                value={data[f.kode]}
+                onChange={(v) => {
+                  setField(f.kode, v);
+                  if (fieldErrors[f.kode]) {
+                    setFieldErrors((prev) => {
+                      const next = { ...prev };
+                      delete next[f.kode];
+                      return next;
+                    });
+                  }
+                }}
+                readOnly={readOnly}
+                submissionId={submission?.id ?? null}
+                files={files.filter((x) => x.field_kode === f.kode)}
+                onFilesChanged={async () => {
+                  if (submission) await loadFiles(submission.id);
+                }}
+                error={fieldErrors[f.kode] ?? null}
+              />
+            );
+          })}
           {!readOnly && (
             <div className="flex flex-wrap items-center gap-2 pt-2">
               <button

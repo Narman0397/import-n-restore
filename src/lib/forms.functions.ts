@@ -164,6 +164,7 @@ export const saveFormFields = createServerFn({ method: "POST" })
         help_text: f.help_text ?? null,
         options: f.options as never,
         validation: f.validation as never,
+        visible_if: (f.visible_if ?? null) as never,
         urutan: f.urutan ?? i,
       }));
       const { error } = await supabaseAdmin.from("form_fields").insert(rows);
@@ -232,6 +233,7 @@ export const publishForm = createServerFn({ method: "POST" })
         help_text: f.help_text ?? null,
         options: ((f.options as unknown as FormField["options"]) ?? []) as FormField["options"],
         validation: ((f.validation as unknown as FormField["validation"]) ?? {}) as FormField["validation"],
+        visible_if: (((f as unknown as { visible_if?: FormField["visible_if"] }).visible_if) ?? null) as FormField["visible_if"],
         urutan: typeof f.urutan === "number" ? f.urutan : i,
       })),
       publishedAt: new Date().toISOString(),
