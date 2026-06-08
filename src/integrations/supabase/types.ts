@@ -4511,6 +4511,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["system_position"]
       }
+      governance_inventory: { Args: never; Returns: Json }
       governance_summary: { Args: never; Returns: Json }
       has_permission: {
         Args: { _permission_code: string; _user_id: string }
