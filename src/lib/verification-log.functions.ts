@@ -53,7 +53,7 @@ export const writeVerificationLog = createServerFn({ method: "POST" })
       actor_id: context.userId,
       action: data.action,
       catatan: data.catatan ?? null,
-      meta: data.meta ?? null,
+      meta: (data.meta ?? null) as never,
     });
     if (error) throw new Error(error.message);
     return { ok: true };

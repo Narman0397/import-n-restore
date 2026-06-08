@@ -51,6 +51,7 @@ import { Route as AdminRbacRouteImport } from './routes/admin.rbac'
 import { Route as AdminRatingRouteImport } from './routes/admin.rating'
 import { Route as AdminPejabatRouteImport } from './routes/admin.pejabat'
 import { Route as AdminOpdRouteImport } from './routes/admin.opd'
+import { Route as AdminNomorSuratRouteImport } from './routes/admin.nomor-surat'
 import { Route as AdminLokasiRouteImport } from './routes/admin.lokasi'
 import { Route as AdminLayananRouteImport } from './routes/admin.layanan'
 import { Route as AdminLaporanRouteImport } from './routes/admin.laporan'
@@ -321,6 +322,11 @@ const AdminPejabatRoute = AdminPejabatRouteImport.update({
 const AdminOpdRoute = AdminOpdRouteImport.update({
   id: '/admin/opd',
   path: '/admin/opd',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminNomorSuratRoute = AdminNomorSuratRouteImport.update({
+  id: '/admin/nomor-surat',
+  path: '/admin/nomor-surat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminLokasiRoute = AdminLokasiRouteImport.update({
@@ -680,6 +686,7 @@ export interface FileRoutesByFullPath {
   '/admin/laporan': typeof AdminLaporanRoute
   '/admin/layanan': typeof AdminLayananRouteWithChildren
   '/admin/lokasi': typeof AdminLokasiRoute
+  '/admin/nomor-surat': typeof AdminNomorSuratRoute
   '/admin/opd': typeof AdminOpdRoute
   '/admin/pejabat': typeof AdminPejabatRoute
   '/admin/rating': typeof AdminRatingRoute
@@ -785,6 +792,7 @@ export interface FileRoutesByTo {
   '/admin/laporan': typeof AdminLaporanRoute
   '/admin/layanan': typeof AdminLayananRouteWithChildren
   '/admin/lokasi': typeof AdminLokasiRoute
+  '/admin/nomor-surat': typeof AdminNomorSuratRoute
   '/admin/opd': typeof AdminOpdRoute
   '/admin/pejabat': typeof AdminPejabatRoute
   '/admin/rating': typeof AdminRatingRoute
@@ -891,6 +899,7 @@ export interface FileRoutesById {
   '/admin/laporan': typeof AdminLaporanRoute
   '/admin/layanan': typeof AdminLayananRouteWithChildren
   '/admin/lokasi': typeof AdminLokasiRoute
+  '/admin/nomor-surat': typeof AdminNomorSuratRoute
   '/admin/opd': typeof AdminOpdRoute
   '/admin/pejabat': typeof AdminPejabatRoute
   '/admin/rating': typeof AdminRatingRoute
@@ -998,6 +1007,7 @@ export interface FileRouteTypes {
     | '/admin/laporan'
     | '/admin/layanan'
     | '/admin/lokasi'
+    | '/admin/nomor-surat'
     | '/admin/opd'
     | '/admin/pejabat'
     | '/admin/rating'
@@ -1103,6 +1113,7 @@ export interface FileRouteTypes {
     | '/admin/laporan'
     | '/admin/layanan'
     | '/admin/lokasi'
+    | '/admin/nomor-surat'
     | '/admin/opd'
     | '/admin/pejabat'
     | '/admin/rating'
@@ -1208,6 +1219,7 @@ export interface FileRouteTypes {
     | '/admin/laporan'
     | '/admin/layanan'
     | '/admin/lokasi'
+    | '/admin/nomor-surat'
     | '/admin/opd'
     | '/admin/pejabat'
     | '/admin/rating'
@@ -1314,6 +1326,7 @@ export interface RootRouteChildren {
   AdminLaporanRoute: typeof AdminLaporanRoute
   AdminLayananRoute: typeof AdminLayananRouteWithChildren
   AdminLokasiRoute: typeof AdminLokasiRoute
+  AdminNomorSuratRoute: typeof AdminNomorSuratRoute
   AdminOpdRoute: typeof AdminOpdRoute
   AdminPejabatRoute: typeof AdminPejabatRoute
   AdminRatingRoute: typeof AdminRatingRoute
@@ -1669,6 +1682,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/opd'
       fullPath: '/admin/opd'
       preLoaderRoute: typeof AdminOpdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/nomor-surat': {
+      id: '/admin/nomor-surat'
+      path: '/admin/nomor-surat'
+      fullPath: '/admin/nomor-surat'
+      preLoaderRoute: typeof AdminNomorSuratRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/lokasi': {
@@ -2208,6 +2228,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLaporanRoute: AdminLaporanRoute,
   AdminLayananRoute: AdminLayananRouteWithChildren,
   AdminLokasiRoute: AdminLokasiRoute,
+  AdminNomorSuratRoute: AdminNomorSuratRoute,
   AdminOpdRoute: AdminOpdRoute,
   AdminPejabatRoute: AdminPejabatRoute,
   AdminRatingRoute: AdminRatingRoute,
